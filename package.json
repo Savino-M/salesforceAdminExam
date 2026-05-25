@@ -1,0 +1,17 @@
+{
+  "name": "salesforce-admin-quiz",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Salesforce Admin certification practice quiz",
+  "scripts": {
+    "test": "node quiz-engine.test.js && node storage.test.js && node property-tests.js",
+    "test:unit": "node quiz-engine.test.js && node storage.test.js",
+    "test:property": "node property-tests.js",
+    "validate": "node validate-questions.js",
+    "build": "node build.js"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "fast-check": "3.22.0"
+  }
+}

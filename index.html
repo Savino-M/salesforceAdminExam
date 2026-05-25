@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Salesforce Admin Certification Quiz</title>
+  <style>
+    /* 5.1 Base styles */
+    *, *::before, *::after { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: #1a1a2e;
+      background: #f0f2f5;
+    }
+    #app {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+    .btn {
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 24px;
+      cursor: pointer;
+      min-height: 44px;
+      transition: background 0.2s, opacity 0.2s;
+    }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+    /* 5.2 Question card styles */
+    .question-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .question-number {
+      font-size: 14px;
+      font-weight: 600;
+      color: #6c757d;
+      margin: 0 0 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .multi-indicator {
+      display: inline-block;
+      background: #e8f4fd;
+      color: #0d6efd;
+      font-weight: 600;
+      font-size: 14px;
+      padding: 4px 12px;
+      border-radius: 16px;
+      margin: 0 0 12px;
+    }
+    .question-text {
+      font-size: 18px;
+      margin: 8px 0 20px;
+    }
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .option-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 16px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      cursor: pointer;
+      min-height: 44px;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .option-label:hover { border-color: #0d6efd; background: #f8f9ff; }
+    .option-label input { margin-top: 3px; width: 18px; height: 18px; flex-shrink: 0; }
+    .option-key { font-weight: 700; color: #495057; }
+    .actions { margin-top: 20px; }
+    .btn-submit { background: #0d6efd; color: #fff; }
+    .btn-submit:hover:not(:disabled) { background: #0b5ed7; }
+
+    /* 5.3 Feedback styles */
+    .feedback { padding: 12px 16px; border-radius: 8px; margin-top: 16px; font-weight: 500; }
+    .feedback-correct { background: #d1e7dd; color: #0f5132; }
+    .feedback-incorrect { background: #f8d7da; color: #842029; }
+    .option-label.correct { border-color: #198754; background: #d1e7dd; }
+    .option-label.incorrect { border-color: #dc3545; background: #f8d7da; }
+
+    /* 5.4 Progress bar and score tracker */
+    .progress-container { margin-bottom: 20px; }
+    .progress-bar {
+      height: 8px;
+      background: #e0e0e0;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      height: 100%;
+      background: #0d6efd;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      color: #6c757d;
+      margin-top: 6px;
+    }
+
+    /* 5.5 Summary screen */
+    .summary-screen {
+      text-align: center;
+      background: #fff;
+      border-radius: 12px;
+      padding: 48px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .summary-screen h1 { margin: 0 0 24px; font-size: 28px; }
+    .summary-score { margin: 24px 0; }
+    .score-big { font-size: 48px; font-weight: 700; margin: 0; color: #0d6efd; }
+    .score-pct { font-size: 24px; color: #6c757d; margin: 8px 0 0; }
+    .summary-msg { font-size: 18px; margin: 16px 0 32px; }
+    .btn-restart { background: #0d6efd; color: #fff; }
+    .btn-restart:hover { background: #0b5ed7; }
+
+    /* Exam selection screen */
+    .exam-select {
+      text-align: center;
+      background: #fff;
+      border-radius: 12px;
+      padding: 48px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .exam-select h1 { margin: 0 0 8px; font-size: 24px; }
+    .exam-select p { color: #6c757d; margin: 0 0 24px; }
+    .exam-list { display: flex; flex-direction: column; gap: 12px; max-width: 400px; margin: 0 auto; }
+    .exam-btn {
+      font-size: 16px; font-weight: 600; border: 2px solid #0d6efd; border-radius: 8px;
+      padding: 16px 24px; cursor: pointer; background: #fff; color: #0d6efd;
+      transition: background 0.2s, color 0.2s;
+    }
+    .exam-btn:hover { background: #0d6efd; color: #fff; }
+
+    /* Resume prompt */
+    .resume-prompt {
+      text-align: center;
+      background: #fff;
+      border-radius: 12px;
+      padding: 48px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .resume-prompt h2 { margin: 0 0 12px; }
+    .resume-actions { display: flex; gap: 12px; justify-content: center; margin-top: 24px; }
+    .btn-resume { background: #0d6efd; color: #fff; }
+    .btn-resume:hover { background: #0b5ed7; }
+    .btn-new { background: #6c757d; color: #fff; }
+    .btn-new:hover { background: #5a6268; }
+
+    /* Navigation */
+    .navigation { display: flex; justify-content: space-between; margin-top: 16px; }
+    .btn-prev { background: #6c757d; color: #fff; }
+    .btn-prev:hover:not(:disabled) { background: #5a6268; }
+    .btn-next { background: #0d6efd; color: #fff; }
+    .btn-next:hover:not(:disabled) { background: #0b5ed7; }
+
+    /* 5.6 Responsive */
+    @media (max-width: 768px) {
+      #app { padding: 12px 8px; }
+      .question-card { padding: 16px; }
+      .question-text { font-size: 16px; }
+      .option-label { padding: 14px 12px; min-height: 44px; }
+      .btn { width: 100%; min-height: 44px; }
+      .navigation { flex-direction: column-reverse; gap: 10px; }
+      .resume-actions { flex-direction: column; }
+      .summary-screen { padding: 32px 16px; }
+      .score-big { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script src="questions-set2.js"></script>
+  <script src="questions-set3.js"></script>
+  <script src="questions.js"></script>
+  <script>
+  (function() {
+    'use strict';
+
+    // --- Quiz Engine ---
+    var quizEngine = (function() {
+      var state;
+
+      function createDefaultState() {
+        return {
+          currentIndex: 0,
+          answers: {},
+          score: 0,
+          totalAnswered: 0,
+          startedAt: new Date().toISOString(),
+          version: 1
+        };
+      }
+
+      function init() {
+        state = createDefaultState();
+        return state;
+      }
+
+      function getState() {
+        return state;
+      }
+
+      function setState(newState) {
+        state = newState;
+      }
+
+      function getCurrentQuestion() {
+        return QUESTIONS[state.currentIndex] || null;
+      }
+
+      function submitAnswer(selectedKeys) {
+        var question = QUESTIONS[state.currentIndex];
+        if (!question) {
+          return null;
+        }
+
+        // Lock after submission — cannot re-submit for already-answered question
+        if (state.answers[question.id]) {
+          return null;
+        }
+
+        // Multi-answer submission validation — reject if selection count != requiredSelections
+        if (!Array.isArray(selectedKeys) || selectedKeys.length !== question.requiredSelections) {
+          return null;
+        }
+
+        // Answer evaluation — correct iff selected set exactly equals correctAnswers set (order-independent)
+        var sortedSelected = selectedKeys.slice().sort();
+        var sortedCorrect = question.correctAnswers.slice().sort();
+        var correct = sortedSelected.length === sortedCorrect.length &&
+          sortedSelected.every(function(key, i) { return key === sortedCorrect[i]; });
+
+        // Record the answer
+        state.answers[question.id] = {
+          selected: selectedKeys,
+          correct: correct
+        };
+
+        // Update score and totalAnswered
+        state.totalAnswered += 1;
+        if (correct) {
+          state.score += 1;
+        }
+
+        return { correct: correct, correctAnswers: question.correctAnswers, selected: selectedKeys };
+      }
+
+      function nextQuestion() {
+        if (state.currentIndex < QUESTIONS.length - 1) {
+          state.currentIndex += 1;
+        }
+      }
+
+      function prevQuestion() {
+        if (state.currentIndex > 0) {
+          state.currentIndex -= 1;
+        }
+      }
+
+      function reset() {
+        state = createDefaultState();
+        return state;
+      }
+
+      function getAnswer(questionId) {
+        return state.answers[questionId] || null;
+      }
+
+      function isComplete() {
+        return state.totalAnswered === QUESTIONS.length;
+      }
+
+      function getProgress() {
+        return {
+          current: state.currentIndex + 1,
+          total: QUESTIONS.length,
+          score: state.score,
+          totalAnswered: state.totalAnswered
+        };
+      }
+
+      return {
+        init: init,
+        getState: getState,
+        setState: setState,
+        getCurrentQuestion: getCurrentQuestion,
+        submitAnswer: submitAnswer,
+        nextQuestion: nextQuestion,
+        prevQuestion: prevQuestion,
+        reset: reset,
+        getAnswer: getAnswer,
+        isComplete: isComplete,
+        getProgress: getProgress
+      };
+    })();
+
+    // --- Storage Manager ---
+    var storage = (function() {
+      var STORAGE_KEY_PREFIX = 'sfAdminQuiz_session_';
+      var CURRENT_VERSION = 1;
+      var currentExamId = null;
+
+      function setExam(examId) { currentExamId = examId; }
+      function getKey() { return STORAGE_KEY_PREFIX + (currentExamId || '1'); }
+
+      function isAvailable() {
+        try {
+          var testKey = '__storage_test__';
+          localStorage.setItem(testKey, '1');
+          localStorage.removeItem(testKey);
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      function save(state) {
+        if (!isAvailable()) return false;
+        try {
+          localStorage.setItem(getKey(), JSON.stringify(state));
+          return true;
+        } catch (e) { return false; }
+      }
+
+      function load() {
+        if (!isAvailable()) return null;
+        try {
+          var raw = localStorage.getItem(getKey());
+          if (raw === null) return null;
+          var parsed = JSON.parse(raw);
+          if (!parsed || parsed.version !== CURRENT_VERSION) { clear(); return null; }
+          return parsed;
+        } catch (e) { clear(); return null; }
+      }
+
+      function clear() {
+        if (!isAvailable()) return false;
+        try { localStorage.removeItem(getKey()); return true; }
+        catch (e) { return false; }
+      }
+
+      return { isAvailable: isAvailable, save: save, load: load, clear: clear, setExam: setExam };
+    })();
+
+    // --- UI Renderer ---
+    var renderer = (function() {
+      var app = document.getElementById('app');
+
+      function renderQuestion(question, existingAnswer) {
+        var inputType = question.requiredSelections === 1 ? 'radio' : 'checkbox';
+        var multiIndicator = question.requiredSelections > 1
+          ? '<p class="multi-indicator">Choose ' + question.requiredSelections + '</p>'
+          : '';
+
+        var optionsHtml = question.options.map(function(opt) {
+          var checked = existingAnswer && existingAnswer.selected.indexOf(opt.key) !== -1 ? ' checked' : '';
+          var disabled = existingAnswer ? ' disabled' : '';
+          return '<label class="option-label">' +
+            '<input type="' + inputType + '" name="answer" value="' + opt.key + '"' + checked + disabled + '>' +
+            '<span class="option-key">' + opt.key + '.</span> ' + opt.text +
+            '</label>';
+        }).join('');
+
+        var html = '<div class="question-card">' +
+          '<h2 class="question-number">Question ' + question.id + ' of ' + QUESTIONS.length + '</h2>' +
+          multiIndicator +
+          '<p class="question-text">' + question.text + '</p>' +
+          '<div class="options-list">' + optionsHtml + '</div>' +
+          '<div id="feedback"></div>' +
+          '<div class="actions">' +
+            '<button id="btn-submit" class="btn btn-submit"' + (existingAnswer ? ' disabled' : ' disabled') + '>Submit</button>' +
+          '</div>' +
+          '</div>';
+
+        var questionContainer = document.getElementById('question-container');
+        if (questionContainer) {
+          questionContainer.innerHTML = html;
+        }
+
+        // If already answered, show feedback immediately
+        if (existingAnswer) {
+          renderFeedback({
+            correct: existingAnswer.correct,
+            correctAnswers: question.correctAnswers,
+            selected: existingAnswer.selected
+          }, question);
+        }
+      }
+
+      function renderFeedback(result, question) {
+        var feedbackEl = document.getElementById('feedback');
+        if (!feedbackEl) return;
+
+        var msg;
+        if (result.correct) {
+          msg = '<div class="feedback feedback-correct"><p>Correct!</p></div>';
+        } else {
+          msg = '<div class="feedback feedback-incorrect">' +
+            '<p>Incorrect. The correct answer' + (result.correctAnswers.length > 1 ? 's are' : ' is') + ': ' +
+            result.correctAnswers.join(', ') + '</p></div>';
+        }
+        feedbackEl.innerHTML = msg;
+
+        // Apply highlighting classes to options
+        var labels = document.querySelectorAll('.option-label');
+        labels.forEach(function(label) {
+          var input = label.querySelector('input');
+          var key = input.value;
+          var isCorrectKey = result.correctAnswers.indexOf(key) !== -1;
+          var isSelected = result.selected.indexOf(key) !== -1;
+
+          if (isCorrectKey) {
+            label.classList.add('correct');
+          }
+          if (isSelected && !isCorrectKey) {
+            label.classList.add('incorrect');
+          }
+        });
+
+        // Disable submit, enable next
+        var btnSubmit = document.getElementById('btn-submit');
+        if (btnSubmit) btnSubmit.disabled = true;
+      }
+
+      function renderProgress(progress) {
+        var pct = Math.round((progress.totalAnswered / progress.total) * 100);
+        var html = '<div class="progress-container">' +
+          '<div class="progress-bar"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
+          '<div class="progress-text">' +
+            '<span>Score: ' + progress.score + '/' + progress.totalAnswered + '</span>' +
+            '<span>' + progress.totalAnswered + ' of ' + progress.total + ' answered</span>' +
+          '</div>' +
+          '</div>';
+
+        var progressEl = document.getElementById('progress');
+        if (progressEl) {
+          progressEl.innerHTML = html;
+        }
+      }
+
+      function renderSummary(finalState) {
+        var pct = Math.round(finalState.score / QUESTIONS.length * 100);
+        app.innerHTML = '<div class="summary-screen">' +
+          '<h1>Quiz Complete!</h1>' +
+          '<div class="summary-score">' +
+            '<p class="score-big">' + finalState.score + ' / ' + QUESTIONS.length + '</p>' +
+            '<p class="score-pct">' + pct + '%</p>' +
+          '</div>' +
+          '<p class="summary-msg">' + (pct >= 65 ? 'Congratulations, you passed!' : 'Keep studying, you\'ll get there!') + '</p>' +
+          '<button id="btn-restart" class="btn btn-restart">Restart Quiz</button>' +
+          '<div style="margin-top:12px"><button id="btn-back-exams" class="btn btn-new">Back to Exam Selection</button></div>' +
+          '</div>';
+      }
+
+      function renderResumePrompt() {
+        app.innerHTML = '<div class="resume-prompt">' +
+          '<h2>Welcome Back!</h2>' +
+          '<p>You have a saved session. Would you like to resume or start fresh?</p>' +
+          '<div class="resume-actions">' +
+            '<button id="btn-resume" class="btn btn-resume">Resume</button>' +
+            '<button id="btn-new" class="btn btn-new">Start New</button>' +
+          '</div>' +
+          '</div>';
+      }
+
+      function renderAppShell() {
+        app.innerHTML = '<div id="progress"></div>' +
+          '<div id="question-container"></div>' +
+          '<div id="navigation" class="navigation"></div>';
+      }
+
+      function setNavigationState(state) {
+        var navEl = document.getElementById('navigation');
+        if (!navEl) return;
+
+        var prevDisabled = state.currentIndex === 0 ? ' disabled' : '';
+        var isLast = state.currentIndex === QUESTIONS.length - 1;
+        var hasAnswered = !!state.answers[QUESTIONS[state.currentIndex].id];
+
+        var nextBtn;
+        if (isLast && hasAnswered) {
+          nextBtn = '<button id="btn-finish" class="btn btn-next">Finish Quiz</button>';
+        } else {
+          nextBtn = '<button id="btn-next" class="btn btn-next"' + (!hasAnswered ? ' disabled' : '') + '>Next</button>';
+        }
+
+        navEl.innerHTML = '<button id="btn-prev" class="btn btn-prev"' + prevDisabled + '>Previous</button>' + nextBtn;
+      }
+
+      return {
+        renderQuestion: renderQuestion,
+        renderFeedback: renderFeedback,
+        renderProgress: renderProgress,
+        renderSummary: renderSummary,
+        renderResumePrompt: renderResumePrompt,
+        renderAppShell: renderAppShell,
+        setNavigationState: setNavigationState
+      };
+    })();
+
+    // --- Event Handlers & App Initialization ---
+    var app = document.getElementById('app');
+
+    function showQuestion() {
+      var question = quizEngine.getCurrentQuestion();
+      if (!question) return;
+      var existingAnswer = quizEngine.getAnswer(question.id);
+      renderer.renderAppShell();
+      renderer.renderProgress(quizEngine.getProgress());
+      renderer.renderQuestion(question, existingAnswer);
+      renderer.setNavigationState(quizEngine.getState());
+      bindOptionListeners();
+      bindSubmitListener();
+      bindNavigationListeners();
+    }
+
+    // 6.5 Option selection — enable/disable submit button based on selection count
+    function bindOptionListeners() {
+      var container = document.getElementById('question-container');
+      if (!container) return;
+      container.addEventListener('change', function() {
+        var question = quizEngine.getCurrentQuestion();
+        if (!question) return;
+        var existingAnswer = quizEngine.getAnswer(question.id);
+        if (existingAnswer) return; // already answered
+        var selected = container.querySelectorAll('input[name="answer"]:checked');
+        var btnSubmit = document.getElementById('btn-submit');
+        if (btnSubmit) {
+          btnSubmit.disabled = selected.length !== question.requiredSelections;
+        }
+      });
+    }
+
+    // 6.1 Submit button click — validate selection count, call submitAnswer, render feedback, save state
+    function bindSubmitListener() {
+      var btnSubmit = document.getElementById('btn-submit');
+      if (!btnSubmit) return;
+      btnSubmit.addEventListener('click', function() {
+        var question = quizEngine.getCurrentQuestion();
+        if (!question) return;
+        var inputs = document.querySelectorAll('input[name="answer"]:checked');
+        var selectedKeys = [];
+        inputs.forEach(function(input) { selectedKeys.push(input.value); });
+
+        if (selectedKeys.length !== question.requiredSelections) return;
+
+        var result = quizEngine.submitAnswer(selectedKeys);
+        if (!result) return;
+
+        renderer.renderFeedback(result, question);
+        renderer.renderProgress(quizEngine.getProgress());
+        renderer.setNavigationState(quizEngine.getState());
+
+        // Disable all inputs after submission
+        document.querySelectorAll('input[name="answer"]').forEach(function(input) {
+          input.disabled = true;
+        });
+
+        // Save state to localStorage
+        storage.save(quizEngine.getState());
+
+        // Re-bind navigation since we re-rendered nav buttons
+        bindNavigationListeners();
+      });
+    }
+
+    // 6.2 Next/Previous button clicks — call navigation methods, render new question or summary
+    function bindNavigationListeners() {
+      var btnNext = document.getElementById('btn-next');
+      var btnPrev = document.getElementById('btn-prev');
+      var btnFinish = document.getElementById('btn-finish');
+
+      if (btnNext) {
+        btnNext.addEventListener('click', function() {
+          quizEngine.nextQuestion();
+          storage.save(quizEngine.getState());
+          showQuestion();
+        });
+      }
+
+      if (btnPrev) {
+        btnPrev.addEventListener('click', function() {
+          quizEngine.prevQuestion();
+          storage.save(quizEngine.getState());
+          showQuestion();
+        });
+      }
+
+      if (btnFinish) {
+        btnFinish.addEventListener('click', function() {
+          storage.clear();
+          renderer.renderSummary(quizEngine.getState());
+          bindRestartListener();
+        });
+      }
+    }
+
+    // 6.3 Restart button click — call reset, clear storage, render first question
+    function bindRestartListener() {
+      var btnRestart = document.getElementById('btn-restart');
+      if (btnRestart) {
+        btnRestart.addEventListener('click', function() {
+          quizEngine.reset();
+          storage.clear();
+          showQuestion();
+        });
+      }
+      var btnBackExams = document.getElementById('btn-back-exams');
+      if (btnBackExams) {
+        btnBackExams.addEventListener('click', function() {
+          storage.clear();
+          showExamSelection();
+        });
+      }
+    }
+
+    function showExamSelection() {
+      var html = '<div class="exam-select">' +
+        '<h1>Salesforce Admin Certification</h1>' +
+        '<p>Choose a practice exam to start:</p>' +
+        '<div class="exam-list">';
+      EXAM_LIST.forEach(function(exam) {
+        html += '<button class="exam-btn" data-exam="' + exam.id + '">' + exam.name + ' (' + EXAM_QUESTIONS[exam.id].length + ' questions)</button>';
+      });
+      html += '</div></div>';
+      app.innerHTML = html;
+
+      // Bind exam buttons
+      var btns = document.querySelectorAll('.exam-btn');
+      btns.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var examId = parseInt(btn.getAttribute('data-exam'));
+          startExam(examId);
+        });
+      });
+    }
+
+    function startExam(examId) {
+      QUESTIONS = EXAM_QUESTIONS[examId];
+      storage.setExam(examId);
+      quizEngine.init();
+
+      var saved = storage.load();
+      if (saved) {
+        renderer.renderResumePrompt();
+        var btnResume = document.getElementById('btn-resume');
+        var btnNew = document.getElementById('btn-new');
+        if (btnResume) {
+          btnResume.addEventListener('click', function() {
+            quizEngine.setState(saved);
+            if (quizEngine.isComplete()) {
+              renderer.renderSummary(quizEngine.getState());
+              bindRestartListener();
+            } else {
+              showQuestion();
+            }
+          });
+        }
+        if (btnNew) {
+          btnNew.addEventListener('click', function() {
+            storage.clear();
+            quizEngine.reset();
+            showQuestion();
+          });
+        }
+      } else {
+        showQuestion();
+      }
+    }
+
+    // 6.4 Page load — show exam selection
+    function initApp() {
+      showExamSelection();
+    }
+
+    // Expose for testing purposes
+    window.__quizEngine = quizEngine;
+    window.__storage = storage;
+    window.__renderer = renderer;
+
+    // Start the app
+    initApp();
+
+  })();
+  </script>
+</body>
+</html>
